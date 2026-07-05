@@ -1,13 +1,29 @@
+import { Hammer } from 'lucide-react'
 import { CopyButton } from '@/components/copy-button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TITLE_CHAR_LIMIT } from '@/components/listing-form'
 import type { AnalysisResult } from '@/engine/analysis'
 
-export function RefactoredListingTab({ result }: { result: AnalysisResult }) {
+export function RefactoredListingTab({
+  result,
+  onApplyAndReaudit,
+}: {
+  result: AnalysisResult
+  onApplyAndReaudit: () => void
+}) {
   const { rewrite } = result
 
   return (
     <div className="flex flex-col gap-6" data-testid="refactored-listing-tab">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-accent/40 p-4">
+        <p className="text-sm">Ready to see the impact? Load this rewrite into the form and re-run the audit.</p>
+        <Button onClick={onApplyAndReaudit} data-testid="apply-and-reaudit-button-rewrite">
+          <Hammer />
+          Build fixed listing & re-audit
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-3">

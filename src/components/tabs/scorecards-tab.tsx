@@ -1,5 +1,6 @@
 import { Gauge } from '@/components/gauge'
 import { RecommendationCard } from '@/components/recommendation-card'
+import { ScoreDeltaBanner, type ScoreSnapshot } from '@/components/score-delta-banner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { TERMINOLOGY } from '@/engine/kb'
@@ -39,11 +40,28 @@ function ScoreColumn({ card }: { card: ScoreCard }) {
   )
 }
 
-export function ScorecardsTab({ result }: { result: AnalysisResult }) {
+export function ScorecardsTab({
+  result,
+  previousScores,
+}: {
+  result: AnalysisResult
+  previousScores: ScoreSnapshot | null
+}) {
   const topFixes = result.recommendations.slice(0, 3)
 
   return (
     <div className="flex flex-col gap-8" data-testid="scorecards-tab">
+      {previousScores && (
+        <ScoreDeltaBanner
+          before={previousScores}
+          after={{
+            overall: result.overall,
+            rufus: result.scores.rufus.score,
+            intent: result.scores.intent.score,
+            naturalness: result.scores.naturalness.score,
+          }}
+        />
+      )}
       <Card>
         <CardContent className="flex flex-col items-center gap-8 py-6 sm:flex-row sm:justify-around">
           <Gauge score={result.overall} grade={result.overallGrade} label="Overall" size={140} />
