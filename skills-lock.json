@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "amazon-working-backwards": {
+      "source": "robdefeo/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/amazon-working-backwards/SKILL.md",
+      "computedHash": "2267ce6d7e7160d485b36c9163fe3a0988d4552ba5dd2a8809f933e72f740a65"
+    }
+  }
+}
