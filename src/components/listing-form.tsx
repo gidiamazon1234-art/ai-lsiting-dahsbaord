@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Search, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,9 @@ interface ListingFormProps {
   onChange: (next: FormState) => void
   onRunAudit: () => void
   onUsePastedCompetitors: () => void
+  onFetchFromAmazon: () => void
+  isFetchingAsin: boolean
+  asinLookupError?: string
   competitorCount: number
   isRunning: boolean
   error?: string
@@ -32,6 +35,9 @@ export function ListingForm({
   onChange,
   onRunAudit,
   onUsePastedCompetitors,
+  onFetchFromAmazon,
+  isFetchingAsin,
+  asinLookupError,
   competitorCount,
   isRunning,
   error,
@@ -61,9 +67,33 @@ export function ListingForm({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="asin">ASIN (optional)</Label>
-              <Input id="asin" data-testid="input-asin" value={value.asin} onChange={(e) => set('asin', e.target.value)} placeholder="B085LL6253" />
+              <div className="flex gap-2">
+                <Input
+                  id="asin"
+                  data-testid="input-asin"
+                  value={value.asin}
+                  onChange={(e) => set('asin', e.target.value)}
+                  placeholder="B085LL6253"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onFetchFromAmazon}
+                  disabled={isFetchingAsin || !value.asin.trim()}
+                  data-testid="fetch-from-amazon-button"
+                  title="Pull title and bullets for this ASIN from Amazon via Keepa"
+                >
+                  <Search />
+                  {isFetchingAsin ? 'Fetching…' : 'Fetch from Amazon'}
+                </Button>
+              </div>
             </div>
           </div>
+          {asinLookupError && (
+            <p role="alert" className="text-sm text-destructive" data-testid="asin-lookup-error">
+              {asinLookupError}
+            </p>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="targetKeyword">Target search keyword</Label>
