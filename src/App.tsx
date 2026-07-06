@@ -70,6 +70,8 @@ function App() {
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const [activeTab, setActiveTab] = useState('scorecards')
+  const [isFetchingAsin, setIsFetchingAsin] = useState(false)
+  const [asinLookupError, setAsinLookupError] = useState<string | undefined>()
 
   function loadDemo() {
     setForm(DEMO_FORM)
@@ -80,6 +82,31 @@ function App() {
 
   function usePastedCompetitors() {
     setCompetitors(parseCompetitorsPaste(form.competitorsText))
+  }
+
+  async function fetchFromAmazon() {
+    const asin = form.asin.trim()
+    if (!asin) return
+    setAsinLookupError(undefined)
+    setIsFetchingAsin(true)
+    try {
+      const res = await fetch(`/api/lookup-asin?asin=${encodeURIComponent(asin)}`)
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error ?? 'Could not fetch this ASIN from Amazon.')
+      }
+      setForm((prev) => ({
+        ...prev,
+        asin,
+        brand: data.brand ?? prev.brand,
+        title: data.title ?? prev.title,
+        bullets: [...(data.bullets ?? []), '', '', '', ''].slice(0, 5),
+      }))
+    } catch (e) {
+      setAsinLookupError(e instanceof Error ? e.message : 'Could not fetch this ASIN from Amazon.')
+    } finally {
+      setIsFetchingAsin(false)
+    }
   }
 
   function runAudit() {
@@ -152,6 +179,9 @@ function App() {
           onChange={setForm}
           onRunAudit={runAudit}
           onUsePastedCompetitors={usePastedCompetitors}
+          onFetchFromAmazon={fetchFromAmazon}
+          isFetchingAsin={isFetchingAsin}
+          asinLookupError={asinLookupError}
           competitorCount={competitors.length}
           isRunning={isRunning}
           error={error}
