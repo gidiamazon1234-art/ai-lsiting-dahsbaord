@@ -1,3 +1,7 @@
+import { Studio } from "@/components/create/studio";
+
+export const metadata = { title: "Create" };
+
 export default function CreatePage() {
-  return <h1 className="text-2xl font-bold">Create</h1>;
+  return <Studio />;
 }

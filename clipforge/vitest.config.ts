@@ -2,6 +2,14 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
-  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
-  test: { include: ["tests/**/*.test.ts"] },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "server-only": path.resolve(__dirname, "tests/helpers/server-only.ts"),
+    },
+  },
+  test: {
+    include: process.env.DATABASE_URL ? ["tests/**/*.test.ts"] : ["tests/unit/**/*.test.ts"],
+    fileParallelism: false,
+  },
 });

@@ -24,6 +24,7 @@ export interface GenerationRow {
   fal_request_id: string | null;
   webhook_token: string;
   queue_position: number | null;
+  started_at: string | null;
   video_path: string | null;
   video_url: string | null;
   cost: number;

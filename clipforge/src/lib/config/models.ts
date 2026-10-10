@@ -40,6 +40,8 @@ export interface VideoModel {
   aspectRatios: readonly AspectRatio[];
   /** Whether aspect ratio applies to image-to-video (most models follow the source image). */
   imageModeUsesAspectRatio: boolean;
+  /** Typical render time in seconds for a 5s clip (drives the progress estimate). */
+  typicalSeconds: number;
   /** Displayed duration for each ClipForge duration (some models snap, e.g. 5s -> 6s). */
   durationLabel: Record<Duration, string>;
   buildInput: (mode: GenerationMode, req: NormalizedRequest) => Record<string, unknown>;
@@ -60,6 +62,7 @@ export const MODELS = [
     },
     aspectRatios: ASPECT_RATIOS,
     imageModeUsesAspectRatio: false,
+    typicalSeconds: 150,
     durationLabel: { 5: "5s", 10: "10s" },
     buildInput: (mode, req) => {
       const base = {
@@ -86,6 +89,7 @@ export const MODELS = [
     // Hailuo renders a fixed 16:9 frame for text-to-video.
     aspectRatios: ["16:9"],
     imageModeUsesAspectRatio: false,
+    typicalSeconds: 180,
     durationLabel: { 5: "6s", 10: "10s" },
     buildInput: (mode, req) => {
       const base = {
@@ -109,6 +113,7 @@ export const MODELS = [
     },
     aspectRatios: ASPECT_RATIOS,
     imageModeUsesAspectRatio: false,
+    typicalSeconds: 100,
     durationLabel: { 5: "5s", 10: "10s" },
     buildInput: (mode, req) => {
       const base = {

@@ -26,4 +26,8 @@ PSQL=("${RUN_AS[@]}" psql -h "$SOCK" -p "$PORT" -U postgres -d postgres -v ON_ER
 "${PSQL[@]}" -f supabase/migrations/0001_init.sql
 "${PSQL[@]}" -f supabase/seed.sql
 "${PSQL[@]}" -f scripts/db/tests.sql
-echo "✅ database tests passed"
+echo "✅ SQL tests passed"
+
+# Integration tests: real route handlers against this database (fal.ai mocked).
+DATABASE_URL="postgresql://postgres@localhost/postgres?host=$SOCK&port=$PORT" npx vitest run tests/integration
+echo "✅ integration tests passed"

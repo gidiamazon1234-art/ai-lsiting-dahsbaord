@@ -16,8 +16,10 @@ export const GENERATION_COSTS: Record<ModelId, Record<Duration, number>> = {
 /** Extra credits for image-to-video (set to 0 to price both modes the same). */
 export const IMAGE_TO_VIDEO_SURCHARGE = 0;
 
-export function generationCost(model: ModelId, duration: Duration, mode: "text" | "image"): number {
-  return GENERATION_COSTS[model][duration] + (mode === "image" ? IMAGE_TO_VIDEO_SURCHARGE : 0);
+export function generationCost(model: string, duration: Duration, mode: "text" | "image"): number {
+  const prices = GENERATION_COSTS[model as ModelId];
+  if (!prices) throw new Error(`No price configured for model "${model}"`);
+  return prices[duration] + (mode === "image" ? IMAGE_TO_VIDEO_SURCHARGE : 0);
 }
 
 export interface CreditPack {

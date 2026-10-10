@@ -36,6 +36,7 @@ create table public.generations (
   fal_request_id text,
   webhook_token text not null default encode(gen_random_bytes(24), 'hex'),
   queue_position integer,
+  started_at timestamptz,              -- when the provider began rendering
   video_path text,                     -- object path in the "videos" storage bucket
   video_url text,                      -- original provider URL (fallback)
   cost integer not null check (cost >= 0),
