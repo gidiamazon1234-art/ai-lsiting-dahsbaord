@@ -1,0 +1,100 @@
+-- ClipForge template gallery seed (6 templates). Safe to re-run.
+insert into public.templates
+  (id, title, description, category, mode, prompt, camera_preset, aspect_ratio, duration, model, cover_gradient, sort_order)
+values
+  (
+    'amazon-product-showcase',
+    'Amazon product showcase',
+    'Clean white-sweep studio shot that makes any product listing-ready.',
+    'E-commerce',
+    'image',
+    'The product sits on a seamless pure white studio sweep, soft diffused key light from the left with a gentle rim light, subtle reflection on a glossy surface beneath, crisp focus on the label and details, premium e-commerce look, no text.',
+    'product-spin',
+    '1:1',
+    5,
+    'kling-v3',
+    'from-sky-500/40 via-cyan-500/20 to-transparent',
+    10
+  ),
+  (
+    'ugc-unboxing',
+    'UGC unboxing',
+    'Authentic phone-shot unboxing that feels like a real customer review.',
+    'Social',
+    'text',
+    'First-person view of hands opening a minimalist cardboard box on a cozy wooden kitchen table in warm morning light, tissue paper rustles, the hands lift out a sleek matte black wireless speaker and turn it toward the camera, natural home setting, authentic TikTok creator vibe.',
+    'handheld',
+    '9:16',
+    5,
+    'kling-v3',
+    'from-amber-500/40 via-orange-500/20 to-transparent',
+    20
+  ),
+  (
+    'luxury-reveal',
+    'Luxury reveal',
+    'Moody, high-contrast reveal for premium and beauty products.',
+    'Luxury',
+    'text',
+    'A crystal perfume bottle emerges from deep shadow on a black marble pedestal, a single beam of warm golden light sweeps across revealing facets and caustic reflections, fine mist drifts through the air, slow and elegant, high-end fragrance commercial, anamorphic lens flare.',
+    'dolly-in',
+    '9:16',
+    5,
+    'kling-v3',
+    'from-yellow-500/40 via-amber-600/20 to-transparent',
+    30
+  ),
+  (
+    'lifestyle-in-use',
+    'Lifestyle in use',
+    'Show the product in a real-life moment your buyers recognize.',
+    'E-commerce',
+    'text',
+    'A young woman on a sunlit balcony pours iced coffee from a stainless steel insulated tumbler, condensation beads on the metal, city skyline softly blurred behind her, golden hour backlight, relaxed lifestyle advertising, natural smile.',
+    'orbit',
+    '9:16',
+    5,
+    'hailuo-2.3',
+    'from-rose-500/40 via-pink-500/20 to-transparent',
+    40
+  ),
+  (
+    'splash-hero',
+    'Splash hero shot',
+    'High-energy liquid splash for drinks, skincare and cleaning products.',
+    'Ads',
+    'text',
+    'A chilled sparkling water can bursts up through a crown of crystal-clear water splash in ultra slow motion, droplets frozen mid-air, bright citrus slices tumbling around it, vivid blue gradient background, high-speed commercial photography look.',
+    'crane-up',
+    '9:16',
+    5,
+    'wan-2.7',
+    'from-blue-500/40 via-indigo-500/20 to-transparent',
+    50
+  ),
+  (
+    'flat-lay-story',
+    'Flat-lay story',
+    'Top-down knolling layout that is perfect for bundles and kits.',
+    'Social',
+    'text',
+    'Top-down flat lay of a skincare routine kit neatly arranged on pastel linen: serum bottle, cream jar, jade roller and eucalyptus sprigs, hands enter the frame and rearrange items one by one, soft even daylight, calm aesthetic Instagram style.',
+    'zoom-out',
+    '1:1',
+    5,
+    'wan-2.7',
+    'from-emerald-500/40 via-teal-500/20 to-transparent',
+    60
+  )
+on conflict (id) do update set
+  title = excluded.title,
+  description = excluded.description,
+  category = excluded.category,
+  mode = excluded.mode,
+  prompt = excluded.prompt,
+  camera_preset = excluded.camera_preset,
+  aspect_ratio = excluded.aspect_ratio,
+  duration = excluded.duration,
+  model = excluded.model,
+  cover_gradient = excluded.cover_gradient,
+  sort_order = excluded.sort_order;
