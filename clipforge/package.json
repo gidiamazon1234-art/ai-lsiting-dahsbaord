@@ -9,13 +9,13 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:db": "bash scripts/test-db.sh"
+    "test:db": "bash scripts/test-db.sh",
+    "test:e2e": "node tests/e2e/smoke.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
     "@fal-ai/client": "^1.10.1",
     "@radix-ui/react-dialog": "^1.2.0",
-    "@radix-ui/react-dropdown-menu": "^2.1.25",
     "@radix-ui/react-label": "^2.1.16",
     "@radix-ui/react-progress": "^1.1.17",
     "@radix-ui/react-select": "^2.3.8",
@@ -49,5 +49,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
     "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=18.18"
   }
 }

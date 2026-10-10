@@ -97,7 +97,7 @@ await step("create: submit text-to-video, watch it render, get notified", async 
 
   assert.deepEqual(
     { ...submitted, prompt: undefined },
-    { mode: "text", prompt: undefined, model: "kling-v3", aspectRatio: "16:9", duration: 10, templateId: null },
+    { mode: "text", prompt: undefined, model: "kling-v3", aspectRatio: "16:9", duration: 10, cameraPreset: null, templateId: null, imagePath: null },
   );
   assert.deepEqual(errors, []);
   await ctx.close();
@@ -115,6 +115,139 @@ await step("create: mobile layout", async () => {
   assert.equal(await page.getByRole("radio", { name: /16:9/ }).getAttribute("aria-checked"), "true");
   assert.equal(await page.getByRole("radio", { name: "6s" }).count(), 1);
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+async function noHorizontalScroll(page) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  assert.equal(overflow, 0, "page scrolls horizontally");
+}
+
+// --- Templates -> Create ------------------------------------------------------
+await step("templates: filter, then 'Use template' prefills the studio", async () => {
+  const { ctx, page, errors } = await newPage(MOBILE);
+  await page.goto(`${BASE}/templates`, { waitUntil: "networkidle" });
+  await page.screenshot({ path: `${OUT}/templates-mobile.png`, fullPage: true });
+  await noHorizontalScroll(page);
+  assert.equal(await page.getByRole("link", { name: /Use template/ }).count(), 6);
+  await page.getByRole("button", { name: "Social", exact: true }).click();
+  assert.equal(await page.getByRole("link", { name: /Use template/ }).count(), 2);
+
+  await page.getByRole("article").filter({ hasText: "UGC unboxing" }).getByRole("link", { name: /Use template/ }).click();
+  await page.waitForURL(/\/create\?template=ugc-unboxing/);
+  await page.getByText("Template: UGC unboxing").waitFor();
+  assert.match(await page.getByLabel(/Prompt/).inputValue(), /ugc unboxing/i);
+  assert.equal(await page.getByRole("radio", { name: /Handheld/ }).getAttribute("aria-checked"), "true");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// --- Enhance + camera + image mode -------------------------------------------
+await step("create: enhance with undo, camera preset, image-to-video tab", async () => {
+  const { ctx, page, errors } = await newPage(DESKTOP);
+  let enhanceBody = null;
+  await page.route("**/api/enhance-prompt", async (route) => {
+    enhanceBody = JSON.parse(route.request().postData());
+    await route.fulfill({ json: { prompt: "A frosted perfume bottle on black marble, a beam of golden light sweeps across it." } });
+  });
+  await page.goto(`${BASE}/create`, { waitUntil: "networkidle" });
+  await page.getByRole("radio", { name: /Crane Up/ }).click();
+  const prompt = page.getByLabel(/Prompt/);
+  await prompt.fill("perfume, luxury");
+  await page.getByRole("button", { name: "Enhance" }).click();
+  await page.getByRole("button", { name: "Undo" }).waitFor();
+  assert.match(await prompt.inputValue(), /frosted perfume bottle/);
+  assert.deepEqual(enhanceBody, { idea: "perfume, luxury", mode: "text", aspectRatio: "9:16", cameraPreset: "crane-up" });
+  await page.screenshot({ path: `${OUT}/create-enhanced.png`, fullPage: true });
+  await page.getByRole("button", { name: "Undo" }).click();
+  assert.equal(await prompt.inputValue(), "perfume, luxury");
+
+  await page.getByRole("tab", { name: /Image to video/ }).click();
+  await page.getByText("Upload a product photo").waitFor();
+  assert.equal(await page.getByRole("radio", { name: /9:16/ }).isDisabled(), true);
+  await page.screenshot({ path: `${OUT}/create-image-mode.png`, fullPage: true });
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// --- Remix ----------------------------------------------------------------------
+await step("create: remix prefills settings from a past video", async () => {
+  const { ctx, page, errors } = await newPage(DESKTOP);
+  await page.goto(`${BASE}/create?remix=00000000-0000-4000-8000-000000000001`, { waitUntil: "networkidle" });
+  await page.getByText(/Remixing a previous video/).waitFor();
+  assert.match(await page.getByLabel(/Prompt/).inputValue(), /Skincare serum/);
+  assert.equal(await page.getByRole("radio", { name: /Wan 2.7/ }).getAttribute("aria-checked"), "true");
+  assert.equal(await page.getByRole("radio", { name: /1:1/ }).getAttribute("aria-checked"), "true");
+  assert.equal(await page.getByRole("radio", { name: /Orbit/ }).getAttribute("aria-checked"), "true");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// --- Library ---------------------------------------------------------------------
+await step("library: grid, play dialog, remix link, delete", async () => {
+  const { ctx, page, errors } = await newPage(MOBILE);
+  let deleted = null;
+  await page.route("**/api/generations/*", async (route) => {
+    if (route.request().method() === "DELETE") {
+      deleted = route.request().url().split("/").pop();
+      return route.fulfill({ json: { ok: true } });
+    }
+    return route.continue();
+  });
+  await page.goto(`${BASE}/library`, { waitUntil: "networkidle" });
+  await page.getByRole("article").first().waitFor();
+  await page.screenshot({ path: `${OUT}/library-mobile.png`, fullPage: true });
+  await noHorizontalScroll(page);
+  assert.equal(await page.getByRole("article").count(), 5);
+  await page.getByText("Failed · no credits charged").waitFor();
+  assert.equal(await page.getByRole("link", { name: "Download MP4" }).count(), 4);
+  assert.equal(
+    await page.getByRole("link", { name: "Remix" }).first().getAttribute("href"),
+    "/create?remix=00000000-0000-4000-8000-000000000000",
+  );
+
+  await page.getByRole("button", { name: "Play video" }).first().click();
+  await page.getByRole("dialog").waitFor();
+  await page.screenshot({ path: `${OUT}/library-dialog.png` });
+  await page.keyboard.press("Escape");
+
+  const card = page.getByRole("article").nth(1);
+  await card.getByRole("button", { name: "Delete" }).click();
+  await card.getByRole("button", { name: "Confirm delete" }).click();
+  await page.getByText("Video deleted").waitFor();
+  assert.equal(deleted, "00000000-0000-4000-8000-000000000001");
+  assert.equal(await page.getByRole("article").count(), 4);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// --- Credits -----------------------------------------------------------------------
+await step("credits: balance, packs, history, checkout redirect", async () => {
+  const { ctx, page, errors } = await newPage(MOBILE);
+  let packId = null;
+  await page.route("**/api/checkout", async (route) => {
+    packId = JSON.parse(route.request().postData()).packId;
+    await route.fulfill({ json: { url: `${BASE}/templates?from=stripe` } });
+  });
+  await page.goto(`${BASE}/credits`, { waitUntil: "networkidle" });
+  await page.screenshot({ path: `${OUT}/credits-mobile.png`, fullPage: true });
+  await noHorizontalScroll(page);
+  await page.getByText("Creator pack").waitFor();
+  await page.getByText("+150").waitFor();
+  await page.getByRole("button", { name: "Buy Creator" }).click();
+  await page.waitForURL(/from=stripe/);
+  assert.equal(packId, "creator");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await step("desktop screenshots", async () => {
+  const { ctx, page } = await newPage(DESKTOP);
+  for (const path of ["templates", "library", "credits"]) {
+    await page.goto(`${BASE}/${path}`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: `${OUT}/${path}-desktop.png`, fullPage: true });
+  }
   await ctx.close();
 });
 
